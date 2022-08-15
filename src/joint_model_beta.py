@@ -20,7 +20,6 @@ def joint_model_beta(s, r, e, L, H, ITER=20):
     # The third vector is commented out in matlab code
 
     # do bGLS with lower / higher bounds
-    # TODO: mark difference between jointbeta and adaptation bGLS
     xB, sMB, sTB, LLE = bGLS_joint_beta(Am, bm, L, H, ITER)
 
     # calculate parameter estimates

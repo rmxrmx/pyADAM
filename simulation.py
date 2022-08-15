@@ -41,13 +41,12 @@ for file in files:
     # TODO: number of iterations and k-ratio should be passed as parameters
 
     gammaE, mE, betaE, stE, smE, LL = joint_model_beta(ioi, iti, asyn, -2, 2)
-    # alpha, beta, sM, sT, LL = adaptation_model(iti, asyn)
-
-    # results.loc[len(results.index)] = [file, alpha, beta, None, None, sT, sM, LL, median_abs_asyn, min_abs_asyn, max_abs_asyn, mean_asyn, sd_asyn, min_asyn,
-                                        # max_asyn, median_iti, sd_iti, min_iti, max_iti, median_ioi, sd_ioi, min_ioi, max_ioi, n_events]
-
     results.loc[len(results.index)] = [file, None, betaE, mE, gammaE, stE, smE, LL, median_abs_asyn, min_abs_asyn, max_abs_asyn, mean_asyn, sd_asyn, min_asyn,
                                        max_asyn, median_iti, sd_iti, min_iti, max_iti, median_ioi, sd_ioi, min_ioi, max_ioi, n_events]
+    
+    alpha, beta, sM, sT, LL = adaptation_model(iti, asyn)
+    results.loc[len(results.index)] = [file, alpha, beta, None, None, sT, sM, LL, median_abs_asyn, min_abs_asyn, max_abs_asyn, mean_asyn, sd_asyn, min_asyn,
+                                        max_asyn, median_iti, sd_iti, min_iti, max_iti, median_ioi, sd_ioi, min_ioi, max_ioi, n_events]
 
 
 results.to_csv("results_joint_beta.csv", index=None)

@@ -15,8 +15,7 @@ def bGLS_joint_beta(A, b, L, H, ITER):
         # calculate the residual noise covariance
         d = np.array(A).T @ z2 - b
 
-        # need to look into covariance - set to N-1 for now, but should be N
-        # TODO: sT is similar when ITER = 1, but is quite a bit higher when ITER = 20
+        # need to look into covariance - set to N for now, but this is different from MATLAB
         k = np.cov(d[:-1], d[1:], bias=True)
 
         # k
@@ -41,16 +40,14 @@ def bGLS_joint_beta(A, b, L, H, ITER):
         k12 = -1 * (sM**2)
 
         # calculate GLS with known covariance
-
         nn = len(b)
 
         cc = np.diag(k11 * np.ones(nn), 0) + np.diag(k12 * np.ones(nn - 1), 1)
         inv_c = np.linalg.inv(cc)
 
-        #z2 = np.linalg.inv(A * inv_c * np.array(A).T) * A * inv_c * b
-
         z2 = np.linalg.inv(A @ inv_c @ np.array(A).T) @ A @ inv_c @ b
         
+        # clip bounds the variable between the given boundaries
         z2[1] = np.clip(z2[1], 0.1, 0.9)
 
         if z2[1] > 0:
@@ -61,6 +58,7 @@ def bGLS_joint_beta(A, b, L, H, ITER):
 
     x = z2
 
+    # equivalent to MATLAB's mvpdf
     ll = np.log2(multivariate_normal([0] * len(b), cc).pdf(x @ A - b))
 
     return x, sM, sT, ll
