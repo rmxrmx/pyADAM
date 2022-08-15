@@ -40,7 +40,7 @@ for file in files:
 
     # TODO: number of iterations and k-ratio should be passed as parameters
 
-    gammaE, mE, betaE, stE, smE, LL = joint_model_beta(ioi, iti, asyn, 0, 1.1)
+    gammaE, mE, betaE, stE, smE, LL = joint_model_beta(ioi, iti, asyn, -2, 2)
     # alpha, beta, sM, sT, LL = adaptation_model(iti, asyn)
 
     # results.loc[len(results.index)] = [file, alpha, beta, None, None, sT, sM, LL, median_abs_asyn, min_abs_asyn, max_abs_asyn, mean_asyn, sd_asyn, min_asyn,
