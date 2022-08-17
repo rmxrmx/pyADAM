@@ -54,16 +54,23 @@ def qa_data(missed_taps, asyn, ITI, IOI, TapTimes, MissedCrit, TestRange):
             print("Data rejected. Reason: data has consecutive invalid rows.")
             return TapTimes, ITI, asyn
     
-    # TODO: does not check if it is start or end, will break
-    # need to talk about how interpolation is done then
     if n_invalid > 0:
         print("Interpolating missing data using average")
 
         invalid_indx = [i for i, x in enumerate(invalid) if x]
 
         for index in invalid_indx:
-            asyn[index + start] = (asyn[index + start - 1] + asyn[index + start + 1]) / 2
-            TapTimes[index + start] = (TapTimes[index + start - 1] + TapTimes[index + start + 1]) / 2
+            # If element is at the start or end, repeat the next / previous value 
+            # ("average" of 1 value)
+            if index == 0:
+                asyn[index + start] = asyn[index + start + 1]
+                TapTimes[index + start] = TapTimes[index + start + 1]
+            elif index + start == end:
+                asyn[index + start] = asyn[index + start - 1]
+                TapTimes[index + start] = TapTimes[index + start - 1]
+            else:
+                asyn[index + start] = (asyn[index + start - 1] + asyn[index + start + 1]) / 2
+                TapTimes[index + start] = (TapTimes[index + start - 1] + TapTimes[index + start + 1]) / 2
 
             print("Interpolated trial {}".format(index + start + 1))
         
