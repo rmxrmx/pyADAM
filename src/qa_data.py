@@ -99,6 +99,9 @@ iti, ioi, asyn = parse_data(onsets1, onsets2)
 
 onsets, iti, asyn = qa_data(missed_taps, asyn, iti, ioi, onsets1, 4, test_range)
 
-quality_data = pd.DataFrame(list(zip(iti[21:], asyn[21:], ioi[21:])))
+
+# ignore the first value, since it is calculated with reference to 0
+# TODO: might need to be revisited when we have data
+quality_data = pd.DataFrame(list(zip(iti[(test_range[0] + 1):], asyn[(test_range[0] + 1):], ioi[(test_range[0] + 1):])))
 
 quality_data.to_csv("cleaned_data.csv", header=None, index=None)
