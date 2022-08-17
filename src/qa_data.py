@@ -36,7 +36,7 @@ def qa_data(missed_taps, asyn, ITI, IOI, TapTimes, MissedCrit, TestRange=None, a
         missed_taps, missed_taps2 = missed_taps
         TapTimes, TapTimes2 = TapTimes
 
-    # if TestRange is given, assume there is a synchronization+continuation phases
+    # if TestRange is given, assume there are synchronization+continuation phases
     # otherwise, just a single phase
     if TestRange is not None:
         start, end = TestRange
@@ -123,7 +123,7 @@ def qa_data(missed_taps, asyn, ITI, IOI, TapTimes, MissedCrit, TestRange=None, a
             if index == 0:
                 asyn[index + start] = asyn[index + start + 1]
                 TapTimes2[index + start] = TapTimes2[index + start + 1]
-            elif index + start == end:
+            elif index + start == end - 1:
                 asyn[index + start] = asyn[index + start - 1]
                 TapTimes2[index + start] = TapTimes2[index + start - 1]
             else:
@@ -151,10 +151,7 @@ data = pd.read_csv(filename, header=None)
 
 onsets1, onsets2 = data[3].tolist(), data[7].tolist()
 
-# get the velocities, AND them (True = both hit, False = at least one missed) and then inverse result
-# TODO: this needs to be changed to accomodate the fact that both ITI and IOI are being checked
-# (so should be split into two columns)
-# and it might need to be moved to the function itself (depends on the data format)
+# it might need to be moved to the function itself (depends on the data format)
 missed_taps = np.logical_not(data[5].tolist()), np.logical_not(data[9].tolist())
 test_range = [21, 71]
 
