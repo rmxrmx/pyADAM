@@ -25,7 +25,7 @@ def parse_data(onsets1, onsets2):
 
 # if missed_taps is a single vector, assumes there is one participant
 # if it is a Tuple of vectors, assumes there are two participants
-def qa_data(missed_taps, asyn, ITI, IOI, TapTimes, MissedCrit, TestRange):
+def qa_data(missed_taps, asyn, ITI, IOI, TapTimes, MissedCrit, TestRange=None, asyn_bound=0.5):
 
     # if there is one dimension (i.e. it is a vector), assume a single participant
     if np.ndim(missed_taps) == 1:
@@ -36,13 +36,18 @@ def qa_data(missed_taps, asyn, ITI, IOI, TapTimes, MissedCrit, TestRange):
         missed_taps, missed_taps2 = missed_taps
         TapTimes, TapTimes2 = TapTimes
 
+    # if TestRange is given, assume there is a synchronization+continuation phases
+    # otherwise, just a single phase
+    if TestRange is not None:
+        start, end = TestRange
+    else:
+        start = 0
+        end = len(asyn)
 
-    # for easier writing
-    start, end = TestRange
     iti = ITI
 
     # check if there are any asynchronies too big
-    bound = IOI * 0.5
+    bound = IOI * asyn_bound
     large_asyn = np.logical_or(np.array(asyn) < -1 * np.array(bound), np.array(asyn) > np.array(bound))
     invalid = np.logical_or(missed_taps[start : end], large_asyn[start : end])
 
@@ -51,7 +56,7 @@ def qa_data(missed_taps, asyn, ITI, IOI, TapTimes, MissedCrit, TestRange):
     n_invalid = sum(invalid)
 
     if two_participants:
-        bound = ITI * 0.5
+        bound = ITI * asyn_bound
         large_asyn2 = np.logical_or(np.array(asyn) < -1 * np.array(bound), np.array(asyn) > np.array(bound))
         invalid2 = np.logical_or(missed_taps2[start : end], large_asyn2[start : end])
 
@@ -92,7 +97,7 @@ def qa_data(missed_taps, asyn, ITI, IOI, TapTimes, MissedCrit, TestRange):
             if index == 0:
                 asyn[index + start] = asyn[index + start + 1]
                 TapTimes[index + start] = TapTimes[index + start + 1]
-            elif index + start == end:
+            elif index + start == end - 1:
                 asyn[index + start] = asyn[index + start - 1]
                 TapTimes[index + start] = TapTimes[index + start - 1]
             else:
