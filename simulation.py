@@ -32,6 +32,7 @@ for file in files:
     min_iti = np.min(iti)
     max_iti = np.max(iti)
     median_ioi = np.median(ioi)
+    # different from MATLAB - divides by N instead of N-1
     sd_ioi = np.std(ioi)
     min_ioi = np.min(ioi)
     max_ioi = np.max(ioi)
@@ -41,11 +42,11 @@ for file in files:
     # TODO: number of iterations and k-ratio should be passed as parameters
 
     gammaE, mE, betaE, stE, smE, LL = joint_model_beta(ioi, iti, asyn, -2, 2)
-    results.loc[len(results.index)] = [file, None, betaE, mE, gammaE, stE, smE, LL, median_abs_asyn, min_abs_asyn, max_abs_asyn, mean_asyn, sd_asyn, min_asyn,
+    results.loc[len(results.index)] = [file, np.nan, betaE, mE, gammaE, stE, smE, LL, median_abs_asyn, min_abs_asyn, max_abs_asyn, mean_asyn, sd_asyn, min_asyn,
                                        max_asyn, median_iti, sd_iti, min_iti, max_iti, median_ioi, sd_ioi, min_ioi, max_ioi, n_events]
     
     alpha, beta, sM, sT, LL = adaptation_model(iti, asyn)
-    results.loc[len(results.index)] = [file, alpha, beta, None, None, sT, sM, LL, median_abs_asyn, min_abs_asyn, max_abs_asyn, mean_asyn, sd_asyn, min_asyn,
+    results.loc[len(results.index)] = [file, alpha, beta, np.nan, np.nan, sT, sM, LL, median_abs_asyn, min_abs_asyn, max_abs_asyn, mean_asyn, sd_asyn, min_asyn,
                                         max_asyn, median_iti, sd_iti, min_iti, max_iti, median_ioi, sd_ioi, min_ioi, max_ioi, n_events]
 
 
