@@ -23,18 +23,33 @@ def parse_data(onsets1, onsets2):
     return iti, ioi, asyn
 
 
-# if missed_taps is a single vector, assumes there is one participant
-# if it is a Tuple of vectors, assumes there are two participants
-def qa_data(missed_taps, asyn, ITI, IOI, TapTimes, MissedCrit, TestRange=None, asyn_bound=0.5):
+# TODO: since missed_taps is optional, two_participants should be coded via TapTimes,
+# where it will be ITI - IOI - Metronome
+# if missed_taps is True, assume that taps with onset = 0 are missed (except the 1st one)
+# TODO: this is not ideal, because now matronome onsets are passed just to say that there are 2
+# participants. Should probably just have a condition that says how many there are
+def qa_data(TapTimes, MissedCrit, TestRange=None, asyn_bound=0.5, missed_taps=False):
 
-    # if there is one dimension (i.e. it is a vector), assume a single participant
-    if np.ndim(missed_taps) == 1:
+    # TODO: need to incorporate missed_taps
+
+    # if there are two dimensions (i.e. Metronome + ITI), assume a single participant
+    if np.ndim(TapTimes) == 2:
         two_participants = False
+        TapTimes, TapTimes2 = TapTimes
     else:
         # split the pairs into separate variables so the original code works
         two_participants = True
-        missed_taps, missed_taps2 = missed_taps
-        TapTimes, TapTimes2 = TapTimes
+        TapTimes, TapTimes2, metronome = TapTimes
+
+    # asyn, ITI and IOI should be computed here
+    ITI, IOI, asyn = parse_data(TapTimes, TapTimes2)
+
+    if missed_taps:
+        taps_missed = TapTimes[TapTimes == 0]
+        taps_missed2 = TapTimes2[TapTimes2 == 0]
+
+        taps_missed[0] = False
+        taps_missed2[0] = False
 
     # if TestRange is given, assume there are synchronization+continuation phases
     # otherwise, just a single phase
@@ -49,18 +64,18 @@ def qa_data(missed_taps, asyn, ITI, IOI, TapTimes, MissedCrit, TestRange=None, a
     # check if there are any asynchronies too big
     bound = IOI * asyn_bound
     large_asyn = np.logical_or(np.array(asyn) < -1 * np.array(bound), np.array(asyn) > np.array(bound))
-    invalid = np.logical_or(missed_taps[start : end], large_asyn[start : end])
+    invalid = np.logical_or(taps_missed[start : end], large_asyn[start : end])
 
-    n_missed_taps = sum(missed_taps[start : end])
+    n_missed_taps = sum(taps_missed[start : end])
     n_large_asyn = sum(large_asyn[start : end])
     n_invalid = sum(invalid)
 
     if two_participants:
         bound = ITI * asyn_bound
         large_asyn2 = np.logical_or(np.array(asyn) < -1 * np.array(bound), np.array(asyn) > np.array(bound))
-        invalid2 = np.logical_or(missed_taps2[start : end], large_asyn2[start : end])
+        invalid2 = np.logical_or(taps_missed2[start : end], large_asyn2[start : end])
 
-        n_missed_taps2 = sum(missed_taps2[start : end])
+        n_missed_taps2 = sum(taps_missed2[start : end])
         n_large_asyn2 = sum(large_asyn2[start : end])
         n_invalid2 = sum(invalid2)
     # otherwise set to 0 to allow the next lines to work
@@ -136,7 +151,7 @@ def qa_data(missed_taps, asyn, ITI, IOI, TapTimes, MissedCrit, TestRange=None, a
         ioi = np.insert(ioi, 0, 0)
 
 
-    # TODO: might need to return more stuff here; to be consulted
+    # TODO: need to return stuff from MATLAB that's not currently here
     if two_participants:
         return (TapTimes, TapTimes2), iti, ioi, asyn
     else:
@@ -157,7 +172,7 @@ test_range = [21, 71]
 
 iti, ioi, asyn = parse_data(onsets1, onsets2)
 
-onsets, iti, ioi, asyn = qa_data(missed_taps, asyn, iti, ioi, (onsets1, onsets2), 4, test_range)
+onsets, iti, ioi, asyn = qa_data((onsets1, onsets2), 4, test_range)
 
 
 # ignore the first value, since it is calculated with reference to 0

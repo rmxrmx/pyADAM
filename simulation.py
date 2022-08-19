@@ -14,7 +14,7 @@ for file in files:
 
     data = pd.read_csv(file, header=None)
 
-    # remove long IOIs - to discuss
+    # remove long IOIs - this should likely be moved to QA
     data = data[data[2] <= 6000]
 
     iti = data[0].tolist()
