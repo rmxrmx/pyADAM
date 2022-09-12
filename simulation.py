@@ -1,7 +1,7 @@
 import numpy as np
 from src.joint_model_beta import joint_model_beta
 from src.adaptation_model import adaptation_model
-from src.qa_data import qa_data
+from src.qa_data import convert_to_intervals, interpolate_onsets, qa_data
 import pandas as pd
 import glob
 
@@ -9,17 +9,34 @@ results = pd.DataFrame(columns=["filename", "alpha", "beta", "delta", "phi", "sT
                                 "mean_async", "sd_async", "mean_abs_async", "sd_abs_async", "min_async", "max_async", "median_ITI", "mean_ITI", "sd_ITI",
                                 "min_ITI", "max_ITI", "median_IOI", "mean_IOI", "sd_IOI", "min_IOI", "max_IOI", "CV_ITI", "CV_async", "n_events"])
 
-files = glob.glob("*cleaned*.csv")
+files = glob.glob("*session1*.csv")
 for file in files:
 
-    data = pd.read_csv(file, header=None)
+    data = pd.read_csv(file, decimal=',', delimiter=';')
+    data = data[np.isnan(data["errCondition"])]
+    data = data[data["run"] == 1]
+    data = data.reset_index()
 
+    # TODO: the likelihood comes out to 0 - need to figure out the issue and fix it
+    # change commas to dots, cast them as floats and convert seconds into milliseconds
+    data["RT_1 s"] = data["RT_1 s"].str.replace(',', '.').replace("None", None).astype(float) * 1000
+    # TODO: some issues with this line
+    # data[" key_tone_onset"] = data[" key_tone_onset"].str.replace(',', '.').replace("None", None).astype(float) * 1000
+    data["RT_2 s"] = data["RT_2 s"].str.replace(',', '.').replace("None", None).astype(float) * 1000
+
+    print(data["RT_2 s"].head())
+    onsets1 = interpolate_onsets(data["RT_1 s"].tolist())
+    onsets2 = interpolate_onsets(data["RT_2 s"].tolist())
+
+    iti, ioi, asyn = convert_to_intervals(onsets1, onsets2)
+    print(onsets1[235:243])
+    print(iti[235:243])
     # remove long IOIs - this should likely be moved to QA
-    data = data[data[2] <= 6000]
+    # data = data[data[2] <= 6000]
 
-    iti = data[0].tolist()
-    ioi = data[2].tolist()
-    asyn = data[1].tolist()
+    # iti = data[0].tolist()
+    # ioi = data[2].tolist()
+    # asyn = data[1].tolist()
 
     median_abs_asyn = np.median(np.abs(asyn))
     min_abs_asyn = np.min(np.abs(asyn))
@@ -46,9 +63,7 @@ for file in files:
     n_events = len(ioi)
 
 
-    # TODO: number of iterations and k-ratio should be passed as parameters
-
-    gammaE, mE, betaE, stE, smE, LL = joint_model_beta(ioi, iti, asyn, -2, 2)
+    gammaE, mE, betaE, stE, smE, LL = joint_model_beta(ioi, iti, asyn, 0, 1.1)
     results.loc[len(results.index)] = [file, np.nan, betaE, mE, gammaE, stE, smE, LL, median_abs_asyn, min_abs_asyn, max_abs_asyn, mean_asyn, sd_asyn,
                                         mean_abs_asyn, sd_abs_asyn, min_asyn, max_asyn, median_iti, mean_iti, sd_iti, min_iti, max_iti, median_ioi, mean_ioi,
                                         sd_ioi, min_ioi, max_ioi, cv_iti, cv_asyn, n_events]
@@ -58,5 +73,5 @@ for file in files:
                                         mean_abs_asyn, sd_abs_asyn, min_asyn, max_asyn, median_iti, mean_iti, sd_iti, min_iti, max_iti, median_ioi, mean_ioi,
                                         sd_ioi, min_ioi, max_ioi, cv_iti, cv_asyn, n_events]
     
-
-results.to_csv("results_joint_beta.csv", index=None)
+# TODO: results need to either be divided by model or specify model in a column
+results.to_csv("results.csv", index=None)

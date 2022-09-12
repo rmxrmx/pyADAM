@@ -12,7 +12,7 @@ import glob
 
 # method for getting ITI, IOI and asynchronies from onsets
 # Data format: onsets1 = ITI, onsets2= IOI
-def parse_data(onsets1, onsets2):
+def convert_to_intervals(onsets1, onsets2):
     iti = np.diff(onsets1)
     ioi = np.diff(onsets2)
 
@@ -21,11 +21,33 @@ def parse_data(onsets1, onsets2):
 
     asyn = np.subtract(onsets1, onsets2)
 
-    return iti, ioi, asyn
+    return iti[1:], ioi[1:], asyn[1:]
+
+def interpolate_onsets(onsets):
+    for i in range(len(onsets)):
+        if np.isnan(onsets[i]):
+            if i == 0:
+                onsets[i] = onsets[i + 1]
+            elif i == len(onsets) - 1:
+                onsets[i] = onsets[-2]
+            else:
+                k = 1
+                for j in range(i, len(onsets)):
+                    if np.isnan(onsets[j]):
+                        k += 1
+                    else:
+                        increment = (onsets[j] - onsets[i - 1]) / k
+                        for h in range(i, j):
+                            onsets[h] = onsets[h - 1] + increment
+                        break
+
+    return onsets
 
 
-# If missed_taps is True, assume that taps with onset = 0 are missed (except the 1st one)
+# If missed_taps is True, assume that taps with onset = None are missed
 # Data should be passed such that The first tap time refers to ITI, second to IOI
+# TODO: should be able to parse data if you only have ITIs IOIs asyncs
+# TODO: interpolations on onsets and ITIs should be separated - code is a mess right now
 def qa_data(TapTimes, MissedCrit, TestRange=None, asyn_bound=0.5, missed_taps=False, two_participants=False):
 
     # clean = whether the data is good enough (below critical number of misses)
@@ -34,20 +56,24 @@ def qa_data(TapTimes, MissedCrit, TestRange=None, asyn_bound=0.5, missed_taps=Fa
     n_interpolations = 0
 
     # split the pairs into separate variables so the original code works
-    TapTimes, TapTimes2,  = TapTimes
+    TapTimes, TapTimes2  = TapTimes
 
-    # asyn, ITI and IOI should be computed here
-    ITI, IOI, asyn = parse_data(TapTimes, TapTimes2)
 
     if missed_taps:
-        taps_missed = TapTimes[TapTimes == 0]
-        taps_missed2 = TapTimes2[TapTimes2 == 0]
+        taps_missed = np.isnan(TapTimes)
+        taps_missed2 = np.isnan(TapTimes2)
 
         taps_missed[0] = False
         taps_missed2[0] = False
     else:
         taps_missed = [False] * len(TapTimes)
         taps_missed2 = [False] * len(TapTimes2)
+
+
+    TapTimes = interpolate_onsets(TapTimes)
+    TapTimes2 = interpolate_onsets(TapTimes2)
+    # asyn, ITI and IOI should be computed here
+    ITI, IOI, asyn = convert_to_intervals(TapTimes, TapTimes2)
 
     # if TestRange is given, assume there are synchronization+continuation phases
     # otherwise, just a single phase
@@ -72,7 +98,7 @@ def qa_data(TapTimes, MissedCrit, TestRange=None, asyn_bound=0.5, missed_taps=Fa
     n_invalid = sum(invalid)
 
     if two_participants:
-        bound = ITI * asyn_bound
+        bound = iti * asyn_bound
         large_asyn2 = np.logical_or(np.array(asyn) < -1 * np.array(bound), np.array(asyn) > np.array(bound))
         invalid2 = np.logical_or(taps_missed2[start : end], large_asyn2[start : end])
 
@@ -96,10 +122,12 @@ def qa_data(TapTimes, MissedCrit, TestRange=None, asyn_bound=0.5, missed_taps=Fa
         print("Data rejected. Reason: too many invalid rows.")
         return (TapTimes, TapTimes2), ITI, IOI, asyn, clean, interpolated, n_missed_taps2, n_large_asyn2, n_interpolations
 
-    for i in range(len(invalid) - 1):
-        if invalid[i] and invalid[i + 1] or (two_participants and invalid2[i] and invalid2[i + 1]):
+    for i in range(len(taps_missed) - 3):
+        #TODO: this is a workaround right now, should make this a parameter of the function
+        if taps_missed[i] and taps_missed[i + 1] and taps_missed[i + 2] and taps_missed[i + 3] or (two_participants and taps_missed2[i] and taps_missed2[i + 1] and taps_missed2[i + 2] and taps_missed2[i + 3]):
             clean = False
             print("Data rejected. Reason: data has consecutive invalid rows.")
+            print("Rows: ", i, i+1)
             return (TapTimes, TapTimes2), ITI, IOI, asyn, clean, interpolated, n_missed_taps2, n_large_asyn2, n_interpolations
     
     if n_invalid > 0:
@@ -168,22 +196,20 @@ def qa_data(TapTimes, MissedCrit, TestRange=None, asyn_bound=0.5, missed_taps=Fa
 
 
 # TODO: this will not exist in the final version
-filename = glob.glob("*Stable*.txt")[0]
+# filename = glob.glob("*Stable*.txt")[0]
 
-data = pd.read_csv(filename, header=None)
+# data = pd.read_csv(filename, header=None)
 
-onsets1, onsets2 = data[3].tolist(), data[7].tolist()
+# onsets1, onsets2 = data[3].tolist(), data[7].tolist()
 
-# it might need to be moved to the function itself (depends on the data format)
-missed_taps = np.logical_not(data[5].tolist()), np.logical_not(data[9].tolist())
-test_range = [21, 71]
+# # it might need to be moved to the function itself (depends on the data format)
+# missed_taps = np.logical_not(data[5].tolist()), np.logical_not(data[9].tolist())
+# test_range = [21, 71]
 
-iti, ioi, asyn = parse_data(onsets1, onsets2)
+# onsets, iti, ioi, asyn, clean, interpolated, n_missed_taps, n_large_asyn, n_interpolations = qa_data((onsets1, onsets2), 4, test_range, two_participants=True)
 
-onsets, iti, ioi, asyn, clean, interpolated, n_missed_taps, n_large_asyn, n_interpolations = qa_data((onsets1, onsets2), 4, test_range, two_participants=True)
+# # ignore the first value, since it is calculated with reference to 0
+# # TODO: might need to be revisited when we have data
+# quality_data = pd.DataFrame(list(zip(iti[(test_range[0] + 1):], asyn[(test_range[0] + 1):], ioi[(test_range[0] + 1):])))
 
-# ignore the first value, since it is calculated with reference to 0
-# TODO: might need to be revisited when we have data
-quality_data = pd.DataFrame(list(zip(iti[(test_range[0] + 1):], asyn[(test_range[0] + 1):], ioi[(test_range[0] + 1):])))
-
-quality_data.to_csv("cleaned_data.csv", header=None, index=None)
+# quality_data.to_csv("cleaned_data.csv", header=None, index=None)

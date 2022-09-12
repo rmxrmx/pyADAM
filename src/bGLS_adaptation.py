@@ -42,6 +42,7 @@ def bGLS_adaptation(A, b, N, P, ITER, Kratio):
     d = np.array(A).T @ z - b
 
     # equivalent to MATLAB's mvpdf
+    print(cc)
     ll = np.log2(multivariate_normal([0] * len(b), cc).pdf(d))
 
     return alpha, beta, sM, sT, ll
