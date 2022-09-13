@@ -1,7 +1,8 @@
 import numpy as np
 from src.bGLS_joint_beta import bGLS_joint_beta
 
-def joint_model_beta(s, r, e, L, H, ITER=20):
+
+def joint_model_beta(s, r, e, L, H, iterations=20):
     e = e - np.mean(e)
 
     # b - Ax
@@ -20,7 +21,7 @@ def joint_model_beta(s, r, e, L, H, ITER=20):
     # The third vector is commented out in matlab code
 
     # do bGLS with lower / higher bounds
-    xB, sMB, sTB, LLE = bGLS_joint_beta(Am, bm, L, H, ITER)
+    xB, sMB, sTB, LLE = bGLS_joint_beta(Am, bm, L, H, iterations)
 
     # calculate parameter estimates
     gammaE = 1 - xB[1]

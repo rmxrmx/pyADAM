@@ -2,15 +2,16 @@ import numpy as np
 
 from src.bGLS_adaptation import bGLS_adaptation
 
-def adaptation_model(r, e, ITER=20, Kratio=1):
 
-    N = len(r) - 4
+def adaptation_model(resp, err, iterations=20, k_ratio=1):
+
+    num = len(resp) - 4
     # different from MATLAB - to discuss
-    P = 1
-    assert(len(r) == len(e))
+    cap_p = 1
+    assert len(resp) == len(err)
 
-    e = e - np.mean(e)
-    b3 = np.subtract(r[4:], r[3:-1])
-    a3 = [e[3:-1], e[2:-2]]
+    err = err - np.mean(err)
+    b_3 = np.subtract(resp[4:], resp[3:-1])
+    a_3 = [err[3:-1], err[2:-2]]
 
-    return bGLS_adaptation(a3, b3, N, P, ITER, Kratio)
+    return bGLS_adaptation(a_3, b_3, num, cap_p, iterations, k_ratio)
