@@ -1,3 +1,8 @@
+"""
+Functions for doing Quality Assurance, interpolation and 
+similar applications on the data.
+"""
+
 from typing import List, Tuple
 import numpy as np
 
@@ -8,15 +13,13 @@ import numpy as np
 # % taps is equal to or greater than MissedCrit. Interpolates invalid taps if
 # % the trial has not been rejected.
 
-# TODO: this will have to be accomodated for the data that Francesca gives us
-
-# method for getting ITI, IOI and asynchronies from onsets
-# Data format: onsets1 = ITI, onsets2= IOI
-
-
 def convert_to_intervals(
     onsets1: List[float], onsets2: List[float]
 ) -> List[List[float]]:
+    """
+    Function for getting ITI, IOI and asynchronies from onsets
+    Data format: onsets1 = ITI, onsets2= IOI
+    """
     iti = np.diff(onsets1)
     ioi = np.diff(onsets2)
 
@@ -25,16 +28,22 @@ def convert_to_intervals(
 
     asyn = np.subtract(onsets1, onsets2)
 
-    # not returning the first values because we only care about ITIs
+    # not returning the first values because those will be zeroes
     return [iti[1:], ioi[1:], asyn[1:]]
 
 
 def interpolate_onsets(onsets: List[float], missed_crit=100) -> List[float]:
+    """
+    Function for interpolating onsets.
+    TODO: needs to check for number of consecutive interpolations
+    and reject data if it is too high.
+    """
+
     number_missing = sum(np.isnan(onsets))
     if number_missing > missed_crit:
         print(f"Too many ({number_missing}) onsets missing, data rejected")
         return onsets, number_missing
-        
+
     for i, e in enumerate(onsets):
         if np.isnan(onsets[i]):
             if i == 0:
@@ -266,23 +275,3 @@ def qa_data(
         n_large_asyn2,
         n_interpolations,
     )
-
-
-# TODO: this will not exist in the final version
-# filename = glob.glob("*Stable*.txt")[0]
-
-# data = pd.read_csv(filename, header=None)
-
-# onsets1, onsets2 = data[3].tolist(), data[7].tolist()
-
-# # it might need to be moved to the function itself (depends on the data format)
-# missed_taps = np.logical_not(data[5].tolist()), np.logical_not(data[9].tolist())
-# test_range = [21, 71]
-
-# onsets, iti, ioi, asyn, clean, interpolated, n_missed_taps, n_large_asyn, n_interpolations = qa_data((onsets1, onsets2), 4, test_range, two_participants=True)
-
-# # ignore the first value, since it is calculated with reference to 0
-# # TODO: might need to be revisited when we have data
-# quality_data = pd.DataFrame(list(zip(iti[(test_range[0] + 1):], asyn[(test_range[0] + 1):], ioi[(test_range[0] + 1):])))
-
-# quality_data.to_csv("cleaned_data.csv", header=None, index=None)
