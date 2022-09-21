@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 import numpy as np
 
 
@@ -16,7 +16,7 @@ import numpy as np
 
 def convert_to_intervals(
     onsets1: List[float], onsets2: List[float]
-) -> List[List[float], List[float], List[float]]:
+) -> List[List[float]]:
     iti = np.diff(onsets1)
     ioi = np.diff(onsets2)
 
@@ -26,11 +26,16 @@ def convert_to_intervals(
     asyn = np.subtract(onsets1, onsets2)
 
     # not returning the first values because we only care about ITIs
-    return iti[1:], ioi[1:], asyn[1:]
+    return [iti[1:], ioi[1:], asyn[1:]]
 
 
-def interpolate_onsets(onsets: List[float]) -> List[float]:
-    for i in enumerate(onsets):
+def interpolate_onsets(onsets: List[float], missed_crit=100) -> List[float]:
+    number_missing = sum(np.isnan(onsets))
+    if number_missing > missed_crit:
+        print(f"Too many ({number_missing}) onsets missing, data rejected")
+        return onsets, number_missing
+        
+    for i, e in enumerate(onsets):
         if np.isnan(onsets[i]):
             if i == 0:
                 onsets[i] = onsets[i + 1]
@@ -47,7 +52,7 @@ def interpolate_onsets(onsets: List[float]) -> List[float]:
                             onsets[h] = onsets[h - 1] + increment
                         break
 
-    return onsets
+    return onsets, number_missing
 
 
 # If missed_taps is True, assume that taps with onset = None are missed
@@ -55,7 +60,7 @@ def interpolate_onsets(onsets: List[float]) -> List[float]:
 # TODO: should be able to parse data if you only have ITIs IOIs asyncs
 # TODO: interpolations on onsets and ITIs should be separated - code is a mess right now
 def qa_data(
-    tap_times: List[List[float], List[float]],
+    tap_times: Tuple[List[float]],
     missed_crit,
     test_range=None,
     asyn_bound=0.5,
