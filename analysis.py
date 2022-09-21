@@ -62,23 +62,24 @@ for file in files:
     data["RT_1 s"] = (
         data["RT_1 s"].str.replace(",", ".").replace("None", None).astype(float) * 1000
     )
-    data[" key_tone_onset"] = data[" key_tone_onset"].astype(float) * 1000
-
     data["RT_2 s"] = (
         data["RT_2 s"].str.replace(",", ".").replace("None", None).astype(float) * 1000
     )
+    data[" key_tone_onset"] = data[" key_tone_onset"].astype(float) * 1000
+
 
     # Group the data by the run
     runs = [x for _, x in data.groupby(data["run"])]
 
     for data in runs:
         # This section interpolates the onsets and calculates the ITI, IOI and async from them
-        onsets1, n_interpolated1 = interpolate_onsets(data["RT_1 s"].tolist())
-        onsets2, n_interpolated2 = interpolate_onsets(data["RT_2 s"].tolist())
-        onsets3, n_interpolated3 = interpolate_onsets(data[" key_tone_onset"].tolist())
+        onsets1, n_interpolated1, removals1 = interpolate_onsets(data["RT_1 s"].tolist())
+        onsets2, n_interpolated2, removals2 = interpolate_onsets(data["RT_2 s"].tolist())
+        onsets3, n_interpolated3, removals3 = interpolate_onsets(data[" key_tone_onset"].tolist())
 
         onsets = [onsets1, onsets2, onsets3]
         n_interpolated = [n_interpolated1, n_interpolated2, n_interpolated3]
+        removals = [removals1, removals2, removals3]
 
         # permute through all possible combinations of leader+follower
         # where 0 = participant1, 1 = participant2, 3 = metronome
@@ -86,20 +87,21 @@ for file in files:
         for grouping in groups:
             leader, follower = grouping
 
-            iti, ioi, asyn = convert_to_intervals(onsets[follower], onsets[leader])
+            iti, ioi, asyn = convert_to_intervals(onsets[follower], onsets[leader], removals[follower], removals[leader])
             n_interpolations = n_interpolated[leader] + n_interpolated[follower]
 
             # convert these to string values for improved readability in the results
             leader = convert_to_participant(leader)
             follower = convert_to_participant(follower)
 
+            # round for improved readability
             iti = np.round(iti, 3)
             ioi = np.round(ioi, 3)
             asyn = np.round(asyn, 3)
 
             # If you want to save the data:
-            # quality_data = pd.DataFrame(list(zip(iti, asyn, ioi)))
-            # quality_data.to_csv("cleaned_data.csv", header=None, index=None)
+            # cleaned_data = pd.DataFrame(list(zip(iti, asyn, ioi)))
+            # cleaned_data.to_csv("cleaned_data.csv", header=None, index=None)
 
             # Behavioural data
             median_abs_asyn = np.median(np.abs(asyn)).round(3)

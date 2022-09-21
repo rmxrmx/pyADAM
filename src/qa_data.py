@@ -14,12 +14,30 @@ import numpy as np
 # % the trial has not been rejected.
 
 def convert_to_intervals(
-    onsets1: List[float], onsets2: List[float]
+    onsets1: List[float], onsets2: List[float], removals1=None, removals2=None
 ) -> List[List[float]]:
     """
     Function for getting ITI, IOI and asynchronies from onsets
     Data format: onsets1 = ITI, onsets2= IOI
     """
+
+    # Set the maximum values of removals as a base.
+    if removals1 is not None and removals2 is not None:
+        removals = [np.max([removals1[0], removals2[0]]), np.max([removals1[1], removals2[1]])]
+    elif removals1 is not None:
+        removals = removals1
+    elif removals2 is not None:
+        removals = removals2
+    else:
+        removals = [0, 0]
+
+    # The subtractions and additions are done so that an element is not removed "twice"
+    # from the onsets. For example, if 1 element has been removed from onsets1 at the end,
+    # and none were removed from onsets2, then the equation would be:
+    # len(onsets1) - 1 + 1, i.e. none would be removed from onsets1.
+    onsets1 = onsets1[(removals[0] - removals1[0]) : (len(onsets1) - removals[1] + removals1[1])]
+    onsets2 = onsets2[(removals[0] - removals2[0]) : (len(onsets2) - removals[1] + removals2[1])]
+
     iti = np.diff(onsets1)
     ioi = np.diff(onsets2)
 
@@ -39,6 +57,9 @@ def interpolate_onsets(onsets: List[float], missed_crit=100) -> List[float]:
     and reject data if it is too high.
     """
 
+    removed_from_start = 0
+    removed_from_end = 0
+
     number_missing = sum(np.isnan(onsets))
     if number_missing > missed_crit:
         print(f"Too many ({number_missing}) onsets missing, data rejected")
@@ -47,9 +68,12 @@ def interpolate_onsets(onsets: List[float], missed_crit=100) -> List[float]:
     for i, e in enumerate(onsets):
         if np.isnan(onsets[i]):
             if i == 0:
-                onsets[i] = onsets[i + 1]
+                onsets = onsets[1:]
+                i -= 1
+                removed_from_start += 1
             elif i == len(onsets) - 1:
-                onsets[i] = onsets[-2]
+                onsets = onsets[:-1]
+                removed_from_end += 1
             else:
                 k = 1
                 for j in range(i, len(onsets)):
@@ -59,9 +83,14 @@ def interpolate_onsets(onsets: List[float], missed_crit=100) -> List[float]:
                         increment = (onsets[j] - onsets[i - 1]) / k
                         for h in range(i, j):
                             onsets[h] = onsets[h - 1] + increment
+                        k = 0
                         break
+                
+                if k != 0:
+                    onsets = onsets[:-1 * (k - 1)]
+                    removed_from_end += k - 1
 
-    return onsets, number_missing
+    return onsets, number_missing, (removed_from_start, removed_from_end)
 
 
 # If missed_taps is True, assume that taps with onset = None are missed
