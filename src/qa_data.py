@@ -63,16 +63,13 @@ def interpolate_onsets(onsets: List[float], missed_crit=100) -> List[float]:
     number_missing = sum(np.isnan(onsets))
     if number_missing > missed_crit:
         print(f"Too many ({number_missing}) onsets missing, data rejected")
-        return onsets, number_missing
+        return onsets, number_missing, 0, 0
 
     for i, e in enumerate(onsets):
         if np.isnan(onsets[i]):
-            if i == 0:
-                onsets = onsets[1:]
-                i -= 1
+            if i == removed_from_start:
                 removed_from_start += 1
             elif i == len(onsets) - 1:
-                onsets = onsets[:-1]
                 removed_from_end += 1
             else:
                 k = 1
@@ -87,8 +84,15 @@ def interpolate_onsets(onsets: List[float], missed_crit=100) -> List[float]:
                         break
                 
                 if k != 0:
-                    onsets = onsets[:-1 * (k - 1)]
-                    removed_from_end += k - 1
+                    removed_from_end = k - 1
+
+        if i == len(onsets) - 1:
+            break
+
+    if removed_from_end > 0:
+        onsets = onsets[removed_from_start : (-1 * removed_from_end)]
+    else:
+        onsets = onsets[removed_from_start:]
 
     return onsets, number_missing, (removed_from_start, removed_from_end)
 

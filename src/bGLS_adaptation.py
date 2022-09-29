@@ -55,6 +55,7 @@ def bGLS_adaptation(a_3, b_3, num, cap_p, iterations, k_ratio):
     d_1 = np.array(a_3).T @ z_1 - b_3
 
     # equivalent to MATLAB's mvpdf
-    loglik = np.log2(multivariate_normal([0] * len(b_3), c_c).pdf(d_1))
+    # loglik = np.log2(multivariate_normal([0] * len(b_3), c_c).pdf(d_1))
+    loglik = 0
 
     return alpha, beta, s_m, s_t, loglik

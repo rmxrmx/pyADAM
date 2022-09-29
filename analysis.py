@@ -15,6 +15,7 @@ results = pd.DataFrame(
     columns=[
         "filename",
         "run",
+        "errCondition",
         "leader",
         "follower",
         "model",
@@ -52,26 +53,29 @@ results = pd.DataFrame(
 )
 
 # This variable should contain all of the files that are to be analysed.
-files = glob.glob("*session1*.csv")
+files = glob.glob("data/*.csv")
 for file in files:
 
+    print(file)
     # Read in an Italian-style CSV
     data = pd.read_csv(file, decimal=",", delimiter=";")
 
     # change commas to dots, cast them as floats and convert seconds into milliseconds
     data["RT_1 s"] = (
-        data["RT_1 s"].str.replace(",", ".").replace("None", None).astype(float) * 1000
+        data["RT_1.s"].str.replace(",", ".").replace("None", None).astype(float) * 1000
     )
     data["RT_2 s"] = (
-        data["RT_2 s"].str.replace(",", ".").replace("None", None).astype(float) * 1000
+        data["RT_2.s"].str.replace(",", ".").replace("None", None).astype(float) * 1000
     )
-    data[" key_tone_onset"] = data[" key_tone_onset"].astype(float) * 1000
+    data[" key_tone_onset"] = data["key_tone_onset"].astype(float) * 1000
 
 
     # Group the data by the run
-    runs = [x for _, x in data.groupby(data["run"])]
+    runs = [x for _, x in data.groupby(data["Block_nr"])]
 
     for data in runs:
+
+        error = data.iloc[0]["errCondition"]
         # This section interpolates the onsets and calculates the ITI, IOI and async from them
         onsets1, n_interpolated1, removals1 = interpolate_onsets(data["RT_1 s"].tolist())
         onsets2, n_interpolated2, removals2 = interpolate_onsets(data["RT_2 s"].tolist())
@@ -82,7 +86,7 @@ for file in files:
         removals = [removals1, removals2, removals3]
 
         # permute through all possible combinations of leader+follower
-        # where 0 = participant1, 1 = participant2, 3 = metronome
+        # where 0 = participant1, 1 = participant2, 2 = metronome
         groups = itertools.permutations(range(3), 2)
         for grouping in groups:
             leader, follower = grouping
@@ -143,7 +147,8 @@ for file in files:
 
                 results.loc[len(results.index)] = [
                     file,
-                    data.iloc[0]["run"],
+                    data.iloc[0]["Block_nr"],
+                    error,
                     leader,
                     follower,
                     model,

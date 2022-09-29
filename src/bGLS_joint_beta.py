@@ -59,6 +59,7 @@ def bGLS_joint_beta(A, b, L, H, ITER):
     x = z2
 
     # equivalent to MATLAB's mvpdf
-    ll = np.log2(multivariate_normal([0] * len(b), cc).pdf(x @ A - b))
+    # ll = np.log2(multivariate_normal([0] * len(b), cc).pdf(x @ A - b))
+    ll = 0
 
     return x, sM, sT, ll
