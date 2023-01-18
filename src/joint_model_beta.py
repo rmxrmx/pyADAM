@@ -18,7 +18,7 @@ def joint_model_beta(s, r, e, L, H, iterations=20):
     Am = A
     Am[0] = A[0] - np.mean(A[0])
     Am[1] = A[1] - np.mean(A[1])
-    # The third vector is commented out in matlab code
+    # The third vector is commented out in matlab codet
 
     # do bGLS with lower / higher bounds
     xB, sMB, sTB, LLE = bGLS_joint_beta(Am, bm, L, H, iterations)
@@ -30,5 +30,12 @@ def joint_model_beta(s, r, e, L, H, iterations=20):
     stE = sTB / np.sqrt(1 + 2 * (gammaE**2) - 2 * gammaE)
 
     smE = sMB
+
+    # N.B!: this is different than in the estimations in previous work
+    # (notably van der Steen et al., 2015),
+    # because this does not assume that generation was done using
+    # (1 - gamma). This keeps the interpretation of gamma the same
+    # as it is in Harry & Keller (2019).
+    gammaE = xB[1]
 
     return gammaE, mE, betaE, stE, smE, LLE

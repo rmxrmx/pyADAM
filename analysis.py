@@ -2,7 +2,6 @@
 A script for analysing SMS data using ADAM models.
 """
 import glob
-import itertools
 import numpy as np
 import pandas as pd
 from src.joint_model_beta import joint_model_beta
@@ -87,7 +86,9 @@ for file in files:
 
         # permute through all possible combinations of leader+follower
         # where 0 = participant1, 1 = participant2, 2 = metronome
-        groups = itertools.permutations(range(3), 2)
+        # TODO: might want to have this customizable.
+        # groups = itertools.permutations(range(3), 2)
+        groups = [[2, 1], [2, 0], [1, 0], [0, 1]]
         for grouping in groups:
             leader, follower = grouping
 
