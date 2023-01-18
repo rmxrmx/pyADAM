@@ -18,7 +18,7 @@ def joint_model_beta(s, r, e, L, H, iterations=20):
     Am = A
     Am[0] = A[0] - np.mean(A[0])
     Am[1] = A[1] - np.mean(A[1])
-    # The third vector is commented out in matlab codet
+    # The third vector is commented out in matlab code
 
     # do bGLS with lower / higher bounds
     xB, sMB, sTB, LLE = bGLS_joint_beta(Am, bm, L, H, iterations)
