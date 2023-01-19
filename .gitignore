@@ -9,4 +9,9 @@ recovery_plots
 *.csv
 *.zip
 *.pyc
+*.png
+*.txt
+*.html
+*.Rproj
+*.Rmd
 __pycache__

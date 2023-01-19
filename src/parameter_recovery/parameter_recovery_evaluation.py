@@ -12,10 +12,10 @@ N.B.: results file must have the following columns:
 model, sd_async, actual_alpha, actual_beta, actual_delta, actual_phi, alpha, beta, delta, phi
 """
 
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from numpy.polynomial.polynomial import polyfit
-import os
 
 
 results_to_analyse = pd.read_csv("new_interr_results.csv")
