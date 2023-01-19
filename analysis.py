@@ -4,8 +4,8 @@ A script for analysing SMS data using ADAM models.
 import glob
 import numpy as np
 import pandas as pd
-from src.joint_model_beta import joint_model_beta
-from src.adaptation_model import adaptation_model
+from src.adam_modules.joint_model_beta import joint_model_beta
+from src.adam_modules.adaptation_model import adaptation_model
 from src.qa_data import convert_to_intervals, interpolate_onsets
 from src.utils import convert_to_participant
 

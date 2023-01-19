@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+new_interr_data
+data
+env
+recovery_plots
+*.csv
+*.zip
+*.pyc
+__pycache__
