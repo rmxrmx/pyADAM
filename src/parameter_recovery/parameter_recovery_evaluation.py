@@ -15,6 +15,7 @@ model, sd_async, actual_alpha, actual_beta, actual_delta, actual_phi, alpha, bet
 import pandas as pd
 import matplotlib.pyplot as plt
 from numpy.polynomial.polynomial import polyfit
+import os
 
 
 results_to_analyse = pd.read_csv("new_interr_results.csv")
@@ -22,7 +23,6 @@ SD_THRESHOLD = 300
 models = ["jointmodelbeta", "adaptation"]
 SAVE_PLOTS = True
 PLOT_LOCATION = "recovery_plots"
-# TODO: create plot directory if it doesn't exist
 
 for model in models:
 
@@ -78,5 +78,7 @@ for model in models:
 
     plt.tight_layout()
     if SAVE_PLOTS:
+        if not os.path.isdir(PLOT_LOCATION):
+            os.mkdir(PLOT_LOCATION)
         plt.savefig(f"{PLOT_LOCATION}/{model}.png")
     plt.show()
