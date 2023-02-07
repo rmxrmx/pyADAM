@@ -2,8 +2,6 @@
 Script for generating onsets from given onsets.
 """
 
-import shutil
-import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,19 +16,13 @@ tones = np.cumsum(IOI).astype(float)
 Tdefault = 600.0
 Tvar = 10
 alphas = [0.1, 0.3, 0.5, 0.7, 0.9, 1.1]
-# alphas = [0.7]
 betas = [0, 0.2, 0.4, 0.6, 0.8, 1]
-# betas = [0.6]
 predicts = [0, 0.5, 1]
-# predicts = [0.5]
 antcorrs = [0.1, 0.5, 0.9]
-# antcorrs = [0.9]
 
 # set how many runs of identical parameters we want to run (primarily used for parameter recovery)
-number_of_runs = 100
+number_of_runs = 10
 
-shutil.rmtree("new_interr_data")
-os.mkdir("new_interr_data")
 # run through every combination of parameters
 # for real-time onset generation, this is not needed
 for alpha in alphas:
@@ -102,7 +94,8 @@ for alpha in alphas:
                             asyn[i] = tap[i] - tones[i]
                             iti[i] = tap[i] - tap[i-1]
 
-                        # uncomment these lines if you want to see the plots for the ITIs and IOIs
+                        # Uncomment these lines if you want to see the plots for the ITIs and IOIs.
+
                         # fig, ax = plt.subplots()
                         # ax.plot(IOI, label="IOI")
                         # ax.plot(iti, label="ITI (generated)")
@@ -111,9 +104,8 @@ for alpha in alphas:
                         # ax.set_ylabel("IOI / ITI")
                         # ax.legend()
                         # plt.show()
-                        # print(IOI)
 
                         # TAP: onsets1, TONES: onsets2
-                        results = pd.DataFrame(data=[iti, asyn, IOI]).transpose()
-                        results.to_csv(f"new_interr_data/interrogator_results_{alpha}_{beta}_{predict}_{antcorr}_run{run}_{model}.csv", index=None, header=None)
+                        results = pd.DataFrame(data=[tap, tones]).transpose()
+                        results.to_csv(f"generated_data/{alpha}_{beta}_{predict}_{antcorr}_run{run}_{model}.csv", index=None, header=None)
                         
