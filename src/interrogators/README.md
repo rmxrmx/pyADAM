@@ -1,7 +1,7 @@
 # Interrogators
-This directory contains two "interrogators", scripts made to generate sensorimotor synchronization (SMS) data according to some ADAM parameters. Note that, for both of these scripts, the models you set to use are important, as the script will only use the parts of ADAM that are estimated by those models.
+This directory contains two "interrogators", scripts made to generate sensorimotor synchronization (SMS) data according to some ADAM parameters. Note that, for both of these scripts, the models you set to use are important, as the script will only use the parts of ADAM that are estimated by those models. If you want to use all of the ADAM parameters, simply name the model something other than the two given options, such as `"generic"`.
 
-Note: if you want to use all of the ADAM parameters, simply name the model something other than the two given options, such as `"generic"`.
+N.B.: the interrogators do not produce any files by default. To do that, uncomment lines saving their results to `.csv` files. Make sure that you output the data you need.
 
 ## Offline interrogator
 `offline_interrogator.py` requires a file of onsets (`seq2.csv` in the original script) to use as the "other" participant. It then can generate onsets by setting ADAM parameters. The strength of this approach is that it is easy to adapt this script to use different combinations of parameters (as seen in the example) to generate different onsets. It is also easy to run this script multiple times, to create more data for your task.

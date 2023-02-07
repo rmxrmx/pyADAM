@@ -2,6 +2,12 @@
 An ADaptation and Aniticpation Model (ADAM) for Sensorimotor Synchronisation (Van Der Steen & Keller, 2013), implemented in Python.
 # Setup
 
+Download pyADAM:
+
+Install required libraries:
+
+`pip install -r requirements.txt`
+
 # Usage
 To see an example of generating ADAM parameters for existing SMS data, see [example analysis](/example_analysis).
 

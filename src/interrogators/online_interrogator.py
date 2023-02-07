@@ -124,7 +124,7 @@ while i < 42:
 
     i += 1
 
-# uncomment these if you want to save the results
+# Uncomment these lines if you want to save the results.
 # import pandas as pd
-# results = pd.DataFrame(data=[iti, asyn, ioi]).transpose()
-# results.to_csv(f"interrogator_results_{ALPHA}_{BETA}_{PREDICT}_{ANTCORR}_{MODEL}.csv", index=None, header=None)
+# results = pd.DataFrame(data=[iti[0], asyn[0], ioi]).transpose()
+# results.to_csv(f"interrogator_results_{ALPHA}_{BETA}_{PREDICT}_{ANTCORR}_{MODELS[0]}.csv", index=None, header=None)
