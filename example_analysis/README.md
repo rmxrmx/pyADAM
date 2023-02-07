@@ -1,0 +1,2 @@
+# Example analysis
+This directory contains an example script for running parameter estimation on SMS data. The `example_data` were created using the [`offline interrogator`](/src/interrogators) with a range of parameters.

@@ -1,0 +1,3 @@
+# Parameter recovery
+
+This directory contains scripts for analysing and evaluating parameter recovery. For this purpose, you must have some data which was generated with known ADAM parameter values (such as via one of the [interrogators](/src/interrogators)) and must save these values in some way. In the example script `parameter_recovery_analysis.py`, these are saved via the filename and then passed into the script. To evaluate parameter recovery, `parameter_recovery_evaluation.py` produces some figures showing a comparison between the estimated parameters and their real values.
