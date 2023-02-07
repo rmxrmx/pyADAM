@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 from numpy.polynomial.polynomial import polyfit
 
 
-results_to_analyse = pd.read_csv("new_interr_results.csv")
+results_to_analyse = pd.read_csv("parameter_recovery_results.csv")
 SD_THRESHOLD = 300
 models = ["jointmodelbeta", "adaptation"]
 SAVE_PLOTS = True

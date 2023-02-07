@@ -48,16 +48,13 @@ results = pd.DataFrame(
         "CV_ITI",
         "CV_async",
         "n_events",
-        "n_interpolated",
     ]
 )
 
 # This variable should contain all of the files that are to be analysed.
-files = glob.glob("new_interr_data/*.csv")
-# files = glob.glob("seq10*.csv")
+files = glob.glob("parameter_recovery_data/*.csv")
 
 for file in files:
-    # Read in an Italian-style CSV
     data = pd.read_csv(file, header=None)
 
     # assume that ITI was follower, IOI was leader
@@ -66,15 +63,12 @@ for file in files:
     for grouping in groups:
         follower, leader = grouping
 
+        # Data is in format of ITI, asyn, IOI.
+        # Skip the first few datapoints as the participants
+        # might not be synchronized on startup.
         iti = data.iloc[:, 0].tolist()[4:]
         ioi = data.iloc[:, 2].tolist()[4:]
         asyn = data.iloc[:, 1].tolist()[4:]
-
-        n_interpolations = 0
-
-        # If you want to save the data:
-        # cleaned_data = pd.DataFrame(list(zip(iti, asyn, ioi)))
-        # cleaned_data.to_csv("cleaned_data.csv", header=None, index=None)
 
         # Behavioural data
         median_abs_asyn = np.median(np.abs(asyn)).round(3)
@@ -101,22 +95,17 @@ for file in files:
         cv_asyn = (sd_asyn / mean_iti).round(3)
         n_events = len(ioi)
 
-        # split by _ to get the actual values of the run
+        # Split by _ to get the actual values of the run.
+        # Note: this part of the script assumes the datafiles are named
+        # parameter_recovery_data/interrogator_results_{alpha_value}_{beta_value}_{delta_value}_{phi_value}_run{number}_{model}.csv
+        # Your data can be named something else, but the lines below should be changed accordingly.
         params = file.split("_")
-
         actual_alpha = params[4]
         actual_beta = params[5]
         actual_delta = params[6]
         actual_phi = params[7]
         run_no = params[8][3:]
         model = params[9][:-4]
-
-        # actual_alpha = .7
-        # actual_beta = .6
-        # actual_delta = .5
-        # actual_phi = .9
-        # run_no = 0
-        # model = "jointmodelbeta"
 
         # calculate the parameters
         if model == "jointmodelbeta":
@@ -174,7 +163,6 @@ for file in files:
             cv_iti,
             cv_asyn,
             n_events,
-            n_interpolations,
         ]
 
-results.to_csv("new_interr_results.csv", index=None)
+results.to_csv("parameter_recovery_results.csv", index=None)
