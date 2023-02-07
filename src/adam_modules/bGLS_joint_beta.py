@@ -60,6 +60,8 @@ def bGLS_joint_beta(A, b, L, H, ITER):
 
     # equivalent to MATLAB's mvpdf
     # ll = np.log2(multivariate_normal([0] * len(b), cc).pdf(x @ A - b))
+
+    # N.B.: LL set to 0 as it was producing crashes
     ll = 0
 
     return x, sM, sT, ll

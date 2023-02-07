@@ -5,6 +5,7 @@
 new_interr_data
 data
 env
+r_scripts
 recovery_plots
 *.csv
 *.zip
