@@ -5,20 +5,23 @@ Setup: set the parameters and models to use.
 """
 import time
 import numpy as np
+import random
 
 # Parameters: Default IOI, timekeeper noise, alpha, beta, delta, gamma
-TDEFAULT = 600.0
+TDEFAULT = 1000.0
+VAR_RANGE = 200.0
+VAR_RANGE_ENABLED = True
 TVAR = 10
 ALPHA = 0.7
 BETA = 0.6
-PREDICT = 0.5 # = delta
-ANTCORR = 0.9 # = gamma = phi
+PREDICT = 0.7 # = delta
+ANTCORR = 0.1 # = gamma = phi
 
 # Keep which models you want to use here.
 # If you keep both models, they will be used in the order in which they appear.
 # So f.e. iti[0] will contain the ITIs for the first model, while iti[1] will be for the second model.
 # If only one model is kept then iti[0] will be for it and iti[1] will be empty.
-MODELS = ["adaptation", "jointmodelbeta"]
+MODELS = ["jointmodelbeta", "adaptation"]
 
 # instantiating all of the variables needed for the model(s)
 ioi = []
@@ -49,11 +52,12 @@ while i < 42:
 
     # TODO: wait here until you get an input from the participant and then save it as a IOI
     # not sure how this will operate in ROS, so I just assume I waited for TDEFAULT time here
-    time.sleep(TDEFAULT / 1000)
+    # time.sleep(TDEFAULT / 1000)
 
     # get difference between the last time you were here and now to calculate the IOI
-    ioi.append((time.time() - input_time) * 1000)
-    input_time = time.time()
+    # ioi.append((time.time() - input_time) * 1000)
+    # input_time = time.time()
+    ioi.append(TDEFAULT + random.uniform(-400, 400))
 
     if tones:
         tones.append(tones[-1] + ioi[i])
@@ -109,6 +113,13 @@ while i < 42:
                 tap[j].append(adapt_out[j][i] + gm[i] - gm[i-1])
             else:
                 tap[j].append(adapt_out[j][i] - ANTCORR * (adapt_out[j][i] - antic_out[j][i]) + gm[i] - gm[i-1])
+
+        # if the taps and ITIS need to be bound, do it here
+        if VAR_RANGE_ENABLED:
+            if tap[j][i] - tap[j][i - 1] > (TDEFAULT + VAR_RANGE):
+                tap[j][i] = tap[j][i - 1] + TDEFAULT + VAR_RANGE
+            elif tap[j][i] - tap[j][i - 1] < (TDEFAULT - VAR_RANGE):
+                tap[j][i] = tap[j][i - 1] + TDEFAULT - VAR_RANGE
 
         # calculate the asynchronies and the ITIs
         if i < 2:
