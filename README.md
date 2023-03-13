@@ -2,7 +2,9 @@
 An ADaptation and Aniticpation Model (ADAM) for Sensorimotor Synchronisation (Van Der Steen & Keller, 2013), implemented in Python.
 # Setup
 
-Download pyADAM:
+Download pyADAM via git:
+
+`git clone https://github.com/rmxrmx/pyADAM.git`
 
 Install required libraries:
 

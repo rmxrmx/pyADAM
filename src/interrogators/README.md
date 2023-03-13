@@ -8,3 +8,9 @@ N.B.: the interrogators do not produce any files by default. To do that, uncomme
 
 ## Online interrogator
 `online_interrogator.py`, on the other hand, requires real-time input. The implementation of this is up to the user; the example simply waits a set amount of time (600ms) to simulate the other participant's IOI. The strength of this approach is that there is no theoretical limit for how long the run can be; you can set it to run for either a certain amount of inputs, some time, or whatever else you choose (this is set by writing a condition in the `while` loop). It also allows you to incorporate this script into a real-time robot or computer responding to a participant.
+
+## Variable explanations
+| Variable         | Explanation |
+|--------------|------------:|
+| `ioi` | The inter onset interval. For the `offline` version, this is provided by a `.csv` file. For the `online` version, this must be implemented by you. |
+| `tones`      | The onsets of the  |

@@ -7,21 +7,21 @@ import time
 import numpy as np
 import random
 
-# Parameters: Default IOI, timekeeper noise, alpha, beta, delta, gamma
-TDEFAULT = 1000.0
-VAR_RANGE = 200.0
-VAR_RANGE_ENABLED = True
-TVAR = 10
-ALPHA = 0.7
-BETA = 0.6
-PREDICT = 0.7 # = delta
-ANTCORR = 0.1 # = gamma = phi
-
 # Keep which models you want to use here.
 # If you keep both models, they will be used in the order in which they appear.
 # So f.e. iti[0] will contain the ITIs for the first model, while iti[1] will be for the second model.
 # If only one model is kept then iti[0] will be for it and iti[1] will be empty.
 MODELS = ["jointmodelbeta", "adaptation"]
+
+# Parameters: Default IOI, timekeeper noise, alpha, beta, delta, gamma
+TDEFAULT = 1000.0
+VAR_RANGE = 400.0
+VAR_RANGE_ENABLED = True
+TVAR = 10
+ALPHA = 0.3
+BETA = [0.1, 0.1]
+PREDICT = [0.7, 0.2] # = delta
+ANTCORR = 0.1 # = gamma = phi
 
 # instantiating all of the variables needed for the model(s)
 ioi = []
@@ -37,12 +37,13 @@ tap = [[], []]
 antic = [[], []]
 antic_out = [[], []]
 iti = [[], []]
+cut = [[], []]
 
 
 # index used in the loop
 i = 0
 
-input_time = time.time()
+# input_time = time.time()
 
 # TODO: this should be replaced by whatever finishing condition
 # (i.e. some signal that the experiment is over)
@@ -74,7 +75,7 @@ while i < 42:
         if i < 2:
             T[j].append(TDEFAULT)
         else:
-            T[j].append(T[j][i-1] - BETA * asyn[j][i-1] + nt[i])
+            T[j].append(T[j][i-1] - BETA[j] * asyn[j][i-1] + nt[i])
 
         # if it is the first two taps
         if i < 2:
@@ -100,7 +101,7 @@ while i < 42:
 
             p = np.polyfit(x, y, 1)
 
-            antic[j].append(PREDICT * np.polyval(p, i+1) + (1-PREDICT) * ioi[i-1] + nt[i])
+            antic[j].append(PREDICT[j] * np.polyval(p, i+1) + (1-PREDICT[j]) * ioi[i-1] + nt[i])
             antic_out[j].append(tones[i-1] + antic[j][i])
 
 
@@ -118,8 +119,12 @@ while i < 42:
         if VAR_RANGE_ENABLED:
             if tap[j][i] - tap[j][i - 1] > (TDEFAULT + VAR_RANGE):
                 tap[j][i] = tap[j][i - 1] + TDEFAULT + VAR_RANGE
+                cut[j].append(True)
             elif tap[j][i] - tap[j][i - 1] < (TDEFAULT - VAR_RANGE):
                 tap[j][i] = tap[j][i - 1] + TDEFAULT - VAR_RANGE
+                cut[j].append(True)
+            else:
+                cut[j].append(False)
 
         # calculate the asynchronies and the ITIs
         if i < 2:
@@ -134,6 +139,11 @@ while i < 42:
         # i.e. this is the time it should wait between the previous tap and the next one.
 
     i += 1
+
+for i in range(0, len(MODELS)):
+    total_cut = np.round(sum(cut[i]) / len(cut[i]), 2)
+    if total_cut > 0.1:
+        print(f"Warning: {total_cut} values were cut for model {i}.")
 
 # Uncomment these lines if you want to save the results.
 # import pandas as pd
